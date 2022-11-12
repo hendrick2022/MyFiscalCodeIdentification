@@ -32,16 +32,14 @@ public class IdentificationCodeController {
     public ResponseEntity<PersonDTO> firstPartCode(@RequestBody PersonDTO personDto) {
         Person person = service.convertToEntity(personDto,"");
         if (townRepo.findByTownName(person.getTown()) != null){
-            String code = service.getTheCode(person);
-            person.setIdentificationCode(code);
-            if(personRepo.findByIdentificationCode(code) == null) {
+            person.setIdentificationCode(service.getTheCode(person));
+            if(personRepo.findByIdentificationCode(service.getTheCode(person)) == null) {
                 personRepo.save(person);
-                return ResponseEntity.status(HttpStatus.CREATED).body(service.convertToDto(person, "SUCCESSFULLY CREATED NEW PERSON"));
+                return ResponseEntity.status(HttpStatus.CREATED).body(service.convertToDto(person, "successfully created new person"));
             }
-            return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(service.convertToDto(person,"THIS PERSON IS ALREADY REGISTER"));
+            return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(service.convertToDto(person,"this person is already register"));
         }else{
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(service.convertToDto(person,"CHECK THE SPELLING OF TOWN NO SUCH TOWN IN OUR DATA BASE"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(service.convertToDto(person,"check the spelling of town no such town in the data base"));
         }
     }
 
@@ -85,30 +83,7 @@ public class IdentificationCodeController {
     public ResponseEntity<PersonDTO> updatePerson(@RequestBody PersonDTO personDto, @PathVariable int id) {
         Person updatePerson = service.convertToEntity(personDto,"");
         if (Objects.nonNull(townRepo.findByTownName(updatePerson.getTown())) ){
-            updatePerson.setIdentificationCode(service.getTheCode(updatePerson));
-            try {
-                Person person = personRepo.findById(id).orElse(null);
-                if (Objects.nonNull(person)){
-                    person.setIdentificationCode(service.getTheCode(updatePerson));
-                    person.setTown(updatePerson.getTown());
-                    person.setBirthDate(updatePerson.getBirthDate());
-                    person.setFirstName(updatePerson.getFirstName());
-                    person.setSurname(updatePerson.getSurname());
-                    person.setGender(updatePerson.getGender());
-                    personRepo.save(person);
-                    return ResponseEntity.status(HttpStatus.OK).body(service.convertToDto(person, "THIS PERSON HAS BEEN SUCCESSFULLY UPDATED"));
-                }else {
-                    if(personRepo.findByIdentificationCode(service.getTheCode(updatePerson)) == null) {
-                        personRepo.save(updatePerson);
-                        return ResponseEntity.status(HttpStatus.CREATED).body(service.convertToDto(updatePerson, "THIS PERSON HAS BEEN CREATED"));
-                    }else{
-                        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(service.convertToDto(updatePerson, "THIS PERSON ALREADY EXIST"));
-                    }
-                }
-            } catch (NoSuchElementException e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-            }
+            return service.setUpdate(updatePerson, id);
         }else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(service.convertToDto(updatePerson,"CHECK THE SPELLING OF TOWN NO SUCH TOWN IN OUR DATA BASE"));
         }
@@ -121,9 +96,8 @@ public class IdentificationCodeController {
         try {
             Person person = personRepo.findById(id).orElse(null);
             if (Objects.nonNull(person)){
-                PersonDTO thisPerson = service.convertToDto(person, "THIS PERSON HAS SUCCESSFULLY BEEN DELETED");
                 personRepo.deleteById(id);
-                return ResponseEntity.status(HttpStatus.OK).body(thisPerson);
+                return ResponseEntity.status(HttpStatus.OK).body(service.convertToDto(person, "THIS PERSON HAS SUCCESSFULLY BEEN DELETED"));
             }else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PersonDTO(id,"NOBODY WITH THIS ID FOR NOW"));
             }

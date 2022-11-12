@@ -1,11 +1,16 @@
 package com.pierro.identification.service;
 import com.pierro.identification.entity.Person;
 import com.pierro.identification.entity.PersonDTO;
+import com.pierro.identification.repository.PersonRepository;
 import com.pierro.identification.repository.TownRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Service
 public class IdentificationService {
@@ -14,6 +19,8 @@ public class IdentificationService {
     TownRepository repo;
     @Autowired
     ModelMapper modelMapper;
+    @Autowired
+    PersonRepository PersonRepo;
 
 
     public String[] separation(String givenString) {
@@ -108,20 +115,19 @@ public class IdentificationService {
         int number = 0;
         int index = 0 ;
         int[] evenCharacterCode = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-        String[] myChar = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y","Z"};
-        String[] character = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y","Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+        char[] letter = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+        Character[] character = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         int[] oddCharacterCode = {1, 0, 5, 7, 9, 13, 15, 17, 19, 21, 2, 4, 18, 20, 11, 3, 6, 8, 12, 14, 16, 10, 22, 25, 24, 23, 1, 0, 5, 7, 9, 13, 15, 17, 19, 21};
-        char[] entry = firstPartCode.toUpperCase().toCharArray();
+        char[] entry = firstPartCode.toLowerCase().toCharArray();
        for (int i = 0; i<firstPartCode.length() ; i++){
-            index = Arrays.asList(character).indexOf(entry[i]+"");
+            index = Arrays.asList(character).indexOf(entry[i]);
             if(i%2 ==0){
                 number += oddCharacterCode[index];
             }else {
                 number += evenCharacterCode[index];
             }
         }
-//enum in java strim
-        return myChar[number%26];
+        return letter[number%26]+"";
     }
 
 
@@ -174,5 +180,29 @@ public class IdentificationService {
         return myPerson;
     }
 
-
+    public ResponseEntity<PersonDTO> setUpdate(Person updatePerson, int id){
+        updatePerson.setIdentificationCode(getTheCode(updatePerson));
+        try {
+            Person person = PersonRepo.findById(id).orElse(null);
+            if (Objects.nonNull(person)){
+                person.setTown(updatePerson.getTown());
+                person.setBirthDate(updatePerson.getBirthDate());
+                person.setFirstName(updatePerson.getFirstName());
+                person.setSurname(updatePerson.getSurname());
+                person.setGender(updatePerson.getGender());
+                PersonRepo.save(person);
+                return ResponseEntity.status(HttpStatus.OK).body(convertToDto(person, "THIS PERSON HAS BEEN SUCCESSFULLY UPDATED"));
+            }else {
+                if(PersonRepo.findByIdentificationCode(getTheCode(updatePerson)) == null) {
+                    PersonRepo.save(updatePerson);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(convertToDto(updatePerson, "THIS PERSON HAS BEEN CREATED"));
+                }else{
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(convertToDto(updatePerson, "THIS PERSON ALREADY EXIST"));
+                }
+            }
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+    }
 }
