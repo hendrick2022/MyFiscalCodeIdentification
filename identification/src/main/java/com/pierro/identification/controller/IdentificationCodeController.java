@@ -1,4 +1,6 @@
 package com.pierro.identification.controller;
+
+import com.pierro.identification.entity.ClientPersonDTO;
 import com.pierro.identification.entity.Person;
 import com.pierro.identification.entity.PersonDTO;
 import com.pierro.identification.repository.PersonRepository;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/code")
+@RequestMapping("/api")
 public class IdentificationCodeController {
 
     @Autowired
@@ -29,7 +31,7 @@ public class IdentificationCodeController {
 
 
     @PostMapping ("/createPerson")
-    public ResponseEntity<PersonDTO> firstPartCode(@RequestBody PersonDTO personDto) {
+    public ResponseEntity<PersonDTO> firstPartCode(@RequestBody ClientPersonDTO personDto) {
         Person person = service.convertToEntity(personDto,"");
         if (townRepo.findByTownName(person.getTown()) != null){
             person.setIdentificationCode(service.getTheCode(person));
@@ -57,7 +59,7 @@ public class IdentificationCodeController {
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new PersonDTO("THE LIST IS EMPTY FOR NOW"));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -73,14 +75,14 @@ public class IdentificationCodeController {
             }
         } catch (NoSuchElementException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
 
 
     @PutMapping("/person/{id}")
-    public ResponseEntity<PersonDTO> updatePerson(@RequestBody PersonDTO personDto, @PathVariable int id) {
+    public ResponseEntity<PersonDTO> updatePerson(@RequestBody ClientPersonDTO personDto, @PathVariable int id) {
         Person updatePerson = service.convertToEntity(personDto,"");
         if (Objects.nonNull(townRepo.findByTownName(updatePerson.getTown())) ){
             return service.setUpdate(updatePerson, id);
@@ -103,7 +105,7 @@ public class IdentificationCodeController {
             }
         } catch (NoSuchElementException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

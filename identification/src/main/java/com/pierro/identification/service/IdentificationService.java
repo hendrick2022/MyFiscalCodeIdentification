@@ -1,4 +1,5 @@
 package com.pierro.identification.service;
+import com.pierro.identification.entity.ClientPersonDTO;
 import com.pierro.identification.entity.Person;
 import com.pierro.identification.entity.PersonDTO;
 import com.pierro.identification.repository.PersonRepository;
@@ -167,7 +168,7 @@ public class IdentificationService {
     }
 
 
-    public Person convertToEntity(PersonDTO personDto, String idCode){
+    public Person convertToEntity(ClientPersonDTO personDto, String idCode){
         Person myPerson = modelMapper.map(personDto, Person.class);
         myPerson.setIdentificationCode(idCode);
         return myPerson;
@@ -197,12 +198,12 @@ public class IdentificationService {
                     PersonRepo.save(updatePerson);
                     return ResponseEntity.status(HttpStatus.CREATED).body(convertToDto(updatePerson, "THIS PERSON HAS BEEN CREATED"));
                 }else{
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(convertToDto(updatePerson, "THIS PERSON ALREADY EXIST"));
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(convertToDto(updatePerson, "THIS PERSON ALREADY EXIST"));
                 }
             }
         } catch (NoSuchElementException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }
