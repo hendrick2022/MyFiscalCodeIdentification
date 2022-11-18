@@ -1,14 +1,16 @@
 package com.pierro.identification.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.time.LocalDate;
+import io.swagger.annotations.ApiModelProperty;
+
 @JsonPropertyOrder({ "surname", "firstName", "birthDate", "gender", "town"})
 public class ClientPersonDTO {
 
     private String surname;
     private String firstName;
     @JsonFormat(pattern="dd-MM-yyyy")
-    private LocalDate birthDate;
+    @ApiModelProperty(notes = "pattern : dd-MM-yyyy",dataType = "LocalDate")
+    private String birthDate;
     private String gender;
     private String town;
 
@@ -28,11 +30,11 @@ public class ClientPersonDTO {
         this.firstName = firstName;
     }
 
-    public LocalDate getBirthDate() {
+    public String getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDate birthDate) {
+    public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
 

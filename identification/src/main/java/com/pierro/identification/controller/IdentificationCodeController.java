@@ -6,6 +6,7 @@ import com.pierro.identification.entity.PersonDTO;
 import com.pierro.identification.repository.PersonRepository;
 import com.pierro.identification.repository.TownRepository;
 import com.pierro.identification.service.IdentificationService;
+import org.apache.commons.validator.GenericValidator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,24 +32,26 @@ public class IdentificationCodeController {
 
 
     @PostMapping ("/createPerson")
-    public ResponseEntity<PersonDTO> firstPartCode(@RequestBody ClientPersonDTO personDto) {
-        Person person = service.convertToEntity(personDto,"");
-        if (townRepo.findByTownName(person.getTown()) != null){
-            person.setIdentificationCode(service.getTheCode(person));
-            if(personRepo.findByIdentificationCode(service.getTheCode(person)) == null) {
-                personRepo.save(person);
-                return ResponseEntity.status(HttpStatus.CREATED).body(service.convertToDto(person, "successfully created new person"));
-            }
-            return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(service.convertToDto(person,"this person is already register"));
-        }else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(service.convertToDto(person,"check the spelling of town no such town in the data base"));
+    public ResponseEntity<PersonDTO> registerNewPerson(@RequestBody ClientPersonDTO personDto) {
+        if (!(GenericValidator.isDate(personDto.getBirthDate(), "dd-MM-yyyy", true))){
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new PersonDTO("wrong entry Date pattern type not respected"));
         }
+        Person person = service.convertToEntity(personDto,"");
+        if (townRepo.findByTownName(person.getTown()) == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(service.convertToDto(person, "check the spelling of town no such town in the data base"));
+        }
+        person.setIdentificationCode(service.getTheCode(person));
+        if(personRepo.findByIdentificationCode(service.getTheCode(person)) == null) {
+            personRepo.save(person);
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.convertToDto(person, "successfully created new person"));
+        }
+        return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(service.convertToDto(person,"this person is already register"));
     }
 
 
 
     @GetMapping("/persons")
-    public ResponseEntity<?> getPersons() {
+    public ResponseEntity<?> getAllPersons() {
         try {
             List<Person> persons = personRepo.findAll();
             ArrayList<PersonDTO> personDtos = new ArrayList<PersonDTO>();
@@ -65,7 +68,7 @@ public class IdentificationCodeController {
 
 
         @GetMapping("/person/{id}")
-    public ResponseEntity<PersonDTO> get(@PathVariable int id) {
+    public ResponseEntity<PersonDTO> getPersonById(@PathVariable int id) {
         try {
             Person person = personRepo.findById(id).orElse(null);
             if (Objects.nonNull(person)){
@@ -82,19 +85,21 @@ public class IdentificationCodeController {
 
 
     @PutMapping("/person/{id}")
-    public ResponseEntity<PersonDTO> updatePerson(@RequestBody ClientPersonDTO personDto, @PathVariable int id) {
+    public ResponseEntity<PersonDTO> updatePersonById(@RequestBody ClientPersonDTO personDto, @PathVariable int id) {
+        if (!(GenericValidator.isDate(personDto.getBirthDate(), "dd-MM-yyyy", true))){
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new PersonDTO("wrong entry Date pattern type not respected"));
+        }
         Person updatePerson = service.convertToEntity(personDto,"");
-        if (Objects.nonNull(townRepo.findByTownName(updatePerson.getTown())) ){
-            return service.setUpdate(updatePerson, id);
-        }else {
+        if (!Objects.nonNull(townRepo.findByTownName(updatePerson.getTown())) ){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(service.convertToDto(updatePerson,"CHECK THE SPELLING OF TOWN NO SUCH TOWN IN OUR DATA BASE"));
         }
+        return service.setUpdate(updatePerson, id);
     }
 
 
 
     @DeleteMapping("/person/{id}")
-    public ResponseEntity<PersonDTO> deleting(@PathVariable int id) {
+    public ResponseEntity<PersonDTO> deletingPersonById(@PathVariable int id) {
         try {
             Person person = personRepo.findById(id).orElse(null);
             if (Objects.nonNull(person)){
@@ -112,7 +117,7 @@ public class IdentificationCodeController {
 
 
     @DeleteMapping("/persons")
-    public ResponseEntity<PersonDTO> deletingAll() {
+    public ResponseEntity<PersonDTO> emptyingDataBase() {
         personRepo.deleteAll();
         return ResponseEntity.status(HttpStatus.OK).body(new PersonDTO("EMPTY DATABASE NOW"));
     }

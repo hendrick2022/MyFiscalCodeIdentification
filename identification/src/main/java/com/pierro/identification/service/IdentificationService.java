@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -158,12 +159,11 @@ public class IdentificationService {
 
     public String getTheCode(Person person){
 
-        String  date = (person.getBirthDate()).toString();
+        String  date = (person.getBirthDate());
         String firstPartCode = surnameCode(separation(person.getSurname())) + firstNameCode(separation(person.getFirstName())) +
-                (date.substring(2,4) + monthLetter(date.substring(5,7))+ birthDayCode(date.substring(8,10),person.getGender()) +
+                (date.substring(8,10) + monthLetter(date.substring(3,5))+ birthDayCode(date.substring(0,2),person.getGender()) +
                 repo.findByTownName(person.getTown()).getTownCode());
-        String code = firstPartCode + codeLetter(firstPartCode);
-
+        String code = firstPartCode + codeLetter(firstPartCode).toUpperCase();
         return code;
     }
 
@@ -193,17 +193,16 @@ public class IdentificationService {
                 person.setGender(updatePerson.getGender());
                 PersonRepo.save(person);
                 return ResponseEntity.status(HttpStatus.OK).body(convertToDto(person, "THIS PERSON HAS BEEN SUCCESSFULLY UPDATED"));
-            }else {
-                if(PersonRepo.findByIdentificationCode(getTheCode(updatePerson)) == null) {
-                    PersonRepo.save(updatePerson);
-                    return ResponseEntity.status(HttpStatus.CREATED).body(convertToDto(updatePerson, "THIS PERSON HAS BEEN CREATED"));
-                }else{
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body(convertToDto(updatePerson, "THIS PERSON ALREADY EXIST"));
-                }
             }
+            if(PersonRepo.findByIdentificationCode(getTheCode(updatePerson)) == null) {
+                PersonRepo.save(updatePerson);
+                return ResponseEntity.status(HttpStatus.CREATED).body(convertToDto(updatePerson, "THIS PERSON HAS BEEN CREATED"));
+                }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(convertToDto(updatePerson, "THIS PERSON ALREADY EXIST"));
         } catch (NoSuchElementException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
 }

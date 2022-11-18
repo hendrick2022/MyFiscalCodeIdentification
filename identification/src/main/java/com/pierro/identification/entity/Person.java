@@ -7,7 +7,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.time.LocalDate;
 
 
 @Component
@@ -21,7 +20,7 @@ public class Person {
     private String Surname;
     private String firstName;
     @JsonFormat(pattern="dd-MM-yyyy")
-    private LocalDate birthDate;
+    private String birthDate;
     private String gender;
     private String town;
 
@@ -33,11 +32,11 @@ public class Person {
         this.id = id;
     }
 
-    public LocalDate getBirthDate() {
+    public String getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDate birthDate) {
+    public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
 

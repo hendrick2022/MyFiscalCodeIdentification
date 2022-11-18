@@ -3,8 +3,8 @@ package com.pierro.identification.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModelProperty;
 
-import java.time.LocalDate;
 //@Datalombok
 @JsonPropertyOrder({"message","id", "surname", "firstName", "birthDate", "gender", "town"})
 public class PersonDTO {
@@ -16,7 +16,8 @@ public class PersonDTO {
     private String firstName;
     @JsonProperty
     @JsonFormat(pattern="dd-MM-yyyy")
-    private LocalDate birthDate;
+    @ApiModelProperty(notes = "pattern : dd-MM-yyyy",dataType = "LocalDate")
+    private String birthDate;
     private String gender;
     private String town;
     private String message;
@@ -34,11 +35,11 @@ public class PersonDTO {
         this.message = message;
     }
 
-    public LocalDate getBirthDate() {
+    public String getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDate birthDate) {
+    public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
 
