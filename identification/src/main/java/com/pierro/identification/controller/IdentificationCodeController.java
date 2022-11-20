@@ -133,7 +133,7 @@ public class IdentificationCodeController {
      return "no town with such and entry in our data base";
      }
      }
-     @GetMapping("/loadTownsForeign")
+     @GetMapping("/loadForeignTownsInDB")
      public String loadForeignTowns() {
      theFile.loadTownsInDB("E:\\learnSpringBoot\\learnSpringBoot\\foreignTownCode.csv");
 
@@ -142,7 +142,7 @@ public class IdentificationCodeController {
 
 
 /**
-     @GetMapping("/loadTownsItaly")
+     @GetMapping("/loadItalyTownsInDB")
      public String loadItalyTowns() {
      theFile.loadTownsInDB("E:\\learnSpringBoot\\learnSpringBoot\\CodeTownItaly.csv");
 

@@ -8,11 +8,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface TownRepository extends JpaRepository<Town, Long> {
+public interface TownRepository extends JpaRepository<Town, String> {
 
 
     Town findByTownName(String townName);
 
-    Optional<Town> findById(long id);
 
 }

@@ -1,49 +1,30 @@
 package com.pierro.identification.entity;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
-
+import lombok.*;
 import javax.persistence.*;
+
+@Setter
+@Getter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Component
 @Entity
 @Table(name = "codeTown")
 @JsonPropertyOrder({"townCode", "townName"})
-//@EnableAutoConfiguration
+//EnableAutoConfiguration
 public class Town {
-
 
     @Id
     @Column(name = "town_name")
+    @Setter @Getter
     private String townName;
-
+    @Setter @Getter
     @Column(name = "town_code")
     private String townCode;
-
-    public Town() {
-    }
-
-    public String getTownCode() {
-        return townCode;
-    }
-
-    public void setTownCode(String townCode) {
-        this.townCode = townCode;
-    }
-
-    public String getTownName() {
-        return townName;
-    }
-
-    public void setTownName(String townName) {
-        this.townName = townName;
-    }
-
-    @Override
-    public String toString() {
-        return
-                "townCode='" + townCode + '\'' +
-                        ", townName='" + townName + '\'' ;
-
-    }
 
 }
